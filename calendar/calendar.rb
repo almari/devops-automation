@@ -27,10 +27,10 @@ configure do
   log_file.sync = true
   logger = Logger.new(log_file)
   logger.level = Logger::DEBUG
-  
+
   client = Google::APIClient.new
-  client.authorization.client_id = '...'
-  client.authorization.client_secret = '...'
+  client.authorization.client_id = '993914706015-eggi75acq4cvpusohtor9vro45qsmh0g.apps.googleusercontent.com'
+  client.authorization.client_secret = 'Y1wkvovRRRS4m_4gKltthRbl'
   client.authorization.scope = 'https://www.googleapis.com/auth/calendar'
 
   calendar = client.discovered_api('calendar', 'v3')
