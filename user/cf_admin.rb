@@ -40,10 +40,10 @@ configure do
   if file_storage.authorization.nil?
     client_secrets = Google::APIClient::ClientSecrets.load
     client.authorization = client_secrets.to_authorization
-    client.authorization.scope = ["https://www.googleapis.com/auth/admin.directory.user","https://www.googleapis.com/auth/admin.directory.user.readonly"]
+    client.authorization.scope = ["https://www.googleapis.com/auth/admin.directory.user","https://www.googleapis.com/auth/admin.directory.user.readonly","https://www.googleapis.com/auth/admin.directory.group"]
   else
     client.authorization = file_storage.authorization
-    client.authorization.scope = ["https://www.googleapis.com/auth/admin.directory.user","https://www.googleapis.com/auth/admin.directory.user.readonly"]
+    client.authorization.scope = ["https://www.googleapis.com/auth/admin.directory.user","https://www.googleapis.com/auth/admin.directory.user.readonly","https://www.googleapis.com/auth/admin.directory.group"]
   end
 
   # Since we're saving the API definition to the settings, we're only retrieving
@@ -61,7 +61,7 @@ end
 
 before do
   # Ensure user has authorized the app
-  unless  request.path_info =~ /\A\/oauth2/
+  unless  user_credentials.access_token || request.path_info =~ /\A\/oauth2/
     redirect to('/oauth2authorize')
   end
 end
@@ -89,66 +89,23 @@ get '/oauth2callback' do
   user_credentials.fetch_access_token!
   # File.open('hawa.txt','a+') {|f| f.write("yaha BATA PARA AAYO") }
   puts "Yippy, successful #{params[:code]}"
-
-  puts user_credentials.access_token
-  puts user_credentials.authorization_uri
-
- # result = api_client.execute(
- #                              :api_method => admin_api.users.get,
- #                              :parameters => {'userKey' => 'zerOnepal@sukulgunda.mygbiz.com'},
- #                              :authorization => user_credentials
- #                             )
- #  puts result.status.to_json
-
-  #redirect to('/createUser')
-
-#----------------------
- name = "sameer"
-  sname= "dai"
-  #name = params[:name]
-  #sname = params[:sname]
-  passwd = 'cloudfactory'
-  email ="#{name}.#{sname}@sukulgunda.mygbiz.com"
-
-
-  new_user = admin_api.users.insert.request_schema.new({
-                                                         'password' => passwd,
-                                                         'primaryEmail' => email,
-                                                         "changePasswordAtNextLogin"=> true,
-                                                         'name' => {
-                                                           'familyName' => name,
-                                                           'givenName' => sname
-                                                         }
-
-
-                                                       })
-  result = api_client.execute(
-                              :api_method => admin_api.users.insert,
-                              :body_object => new_user
-                              )
-  #puts "Hurray, New User #{email} created. :)"
- 'Ok new user created with informations'
-  result.data.to_hash
-#----------------------
-
-
-
+  #  puts user_credentials.authorization_uri
 end
 
 get '/' do
 
 # Make an API call to retrive user.,
 
-  puts api_client
-  puts user_credentials.access_token
-  puts user_credentials.authorization_uri
+  #puts api_client
+  #puts user_credentials.access_token
+  #puts user_credentials.authorization_uri
 
-  result = api_client.execute(
-                              :api_method => admin_api.users.get,
-                              :parameters => {'userKey' => 'blah@sukulgunda.mygbiz.com'},
-                              :authorization => user_credentials
-                              )
-  puts result.status
+# result = api_client.execute(
+#                              :api_method => admin_api.users.get,
+#                              :parameters => {'userKey' => 'blah@sukulgunda.mygbiz.com'},
+#                              :authorization => user_credentials
+#                              )
+ # puts result.status
 #  [ attr_reader :result.status, {'Content-Type' => 'application/json'}, result.data.to_json ]
   #puts result.data.to_json
 
@@ -166,25 +123,26 @@ end
 
 # Creating a new user
 #credit:http://goo.gl/weRQPO
+#
+#call like this url:
+#               "http://localhost:4567/createUser/name=Bir&sname=Gorkhali"
+# and the email id of Bir Gorkahali will be "bir.gorkhali@domainname.com"
+#
 get '/createUser' do
 
   #paramaters needed: { Name and FamilyName }
-
-  name = "sameer"
-  sname= "dai"
-  #name = params[:name]
-  #sname = params[:sname]
-  passwd = 'cloudfactory'
-  email =" #{name}.#{sname}@sproutify.com"
-
+  name = params[:name]
+  sname = params[:sname]
+  passwd = 'tech@sprout'
+  email ="#{name.downcase}.#{sname.downcase}@sukulgunda.mygbiz.com"
 
   new_user = admin_api.users.insert.request_schema.new({
                                                          'password' => passwd,
                                                          'primaryEmail' => email,
                                                          "changePasswordAtNextLogin"=> true,
                                                          'name' => {
-                                                           'familyName' => name,
-                                                           'givenName' => sname
+                                                           'familyName' => sname,
+                                                           'givenName' => name
                                                          }
 
 
@@ -194,9 +152,91 @@ get '/createUser' do
                               :body_object => new_user
                               )
   puts "Hurray, New User #{email} created. :)"
-  puts result.data.to_hash
+  result.data.to_hash
 
 end
+
+
+get '/getUser' do
+
+  puts "Retriving info for : #{params[:email_addr]}"
+  result = api_client.execute(
+                              :api_method => admin_api.users.get,
+                              :parameters => {"userKey" => "#{params[:email_addr]}"}
+
+                              )
+    result.data.to_hash
+end
+
+# get '/updateUser' do
+
+#   puts "Deleting the User : #{params[:email_addr]}"
+#   result = api_client.execute(
+#                               :api_method => admin_api.users.delete,
+#                               :parameters => {"userKey" => "#{params[:email_addr]}"}
+
+#                               )
+#   result.data
+
+# end
+
+get '/deleteUser' do
+
+  puts "Deleting the User : #{params[:email_addr]}"
+  result = api_client.execute(
+                              :api_method => admin_api.users.delete,
+                              :parameters => {"userKey" => "#{params[:email_addr]}"}
+
+                              )
+  result.data
+
+end
+
+get '/listUsers' do
+
+  puts "Listing all the user : #{params[:domain]}"
+  result = api_client.execute(
+                              :api_method => admin_api.users.list,
+                              :parameters => {"domain" => "#{params[:domain]}"}
+
+                              )
+  result.data.to_hash
+
+end
+
+##---------------------------------------------------------------------------
+##---------------------------------------------------------------------------
+##---------------------------------------------------------------------------
+## http://localhost:4567/createGroup?group_email?=&group_name=&group_email_alias=&description=
+get '/createGroup' do
+
+  group_email= params[:group_email]
+  group_name= params[:group_name]
+  description= params[:description]
+  aliases=params[:group_email_alias]
+
+  new_group = admin_api.groups.insert.request_schema.new({
+                                                           "email"=> group_email,
+                                                           "name"=> group_name,
+                                                           "description"=> description
+                                                         })
+  result = api_client.execute(
+                              :api_method => admin_api.groups.insert,
+                              :body_object => new_group
+                              )
+  puts result.data.to_hash
+  puts "Creation of New Group Email: #{params[:group_email]} \n with alias: #{params[:group_email_alias]} succcesful."
+
+end
+
+
+##---------------------------------------------------------------------------
+##---------------------------------------------------------------------------
+
+
+
+
+
 
 # get '/calander' do
 
