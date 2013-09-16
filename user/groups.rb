@@ -33,7 +33,7 @@ end
 # ⚔Url:
 #     /deleteGroup?gemail=testgroup@test.com
 ###
-get '/deleteGroup' do
+delete '/deleteGroup' do
 
   puts "Okies the googleGroup: #{params[:gemail]} is no more."
   result = api_client.execute(:api_method => admin_api.groups.delete,

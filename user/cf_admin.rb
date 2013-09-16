@@ -132,7 +132,7 @@ end
 # Creating a new user
 #credit:http://goo.gl/weRQPO
 #
-#call like this url:
+#call like in this url:
 #               "http://localhost:4567/createUser?name=Bir&sname=Gorkhali"
 # and the email id of Bir Gorkahali will be "bir.gorkhali@domainname.com"
 #
@@ -152,8 +152,6 @@ get '/createUser' do
                                                            'familyName' => sname,
                                                            'givenName' => name
                                                          }
-
-
                                                        })
   result = api_client.execute(
                               :api_method => admin_api.users.insert,
