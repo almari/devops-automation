@@ -5,6 +5,7 @@ require 'google/api_client/auth/file_storage'
 require 'sinatra'
 require 'logger'
 
+require_relative 'groups'
 enable :sessions
 
 CREDENTIAL_STORE_FILE = "#{$0}-oauth2.json"
@@ -37,13 +38,20 @@ configure do
     :application_version => '0.0.1')
 
   file_storage = Google::APIClient::FileStorage.new(CREDENTIAL_STORE_FILE)
+
   if file_storage.authorization.nil?
     client_secrets = Google::APIClient::ClientSecrets.load
     client.authorization = client_secrets.to_authorization
-    client.authorization.scope = ["https://www.googleapis.com/auth/admin.directory.user","https://www.googleapis.com/auth/admin.directory.user.readonly","https://www.googleapis.com/auth/admin.directory.group"]
+
+  #scopes involved
+  client.authorization.scope = ["https://www.googleapis.com/auth/admin.directory.user","https://www.googleapis.com/auth/admin.directory.user.readonly","https://www.googleapis.com/auth/admin.directory.group","https://www.googleapis.com/auth/admin.directory.group","https://www.googleapis.com/auth/admin.directory.group.member","https://www.googleapis.com/auth/admin.directory.group.readonly"]
+
   else
     client.authorization = file_storage.authorization
-    client.authorization.scope = ["https://www.googleapis.com/auth/admin.directory.user","https://www.googleapis.com/auth/admin.directory.user.readonly","https://www.googleapis.com/auth/admin.directory.group"]
+
+  #scopes involved
+  client.authorization.scope = ["https://www.googleapis.com/auth/admin.directory.user","https://www.googleapis.com/auth/admin.directory.user.readonly","https://www.googleapis.com/auth/admin.directory.group","https://www.googleapis.com/auth/admin.directory.group","https://www.googleapis.com/auth/admin.directory.group.member","https://www.googleapis.com/auth/admin.directory.group.readonly"]
+
   end
 
   # Since we're saving the API definition to the settings, we're only retrieving
@@ -125,7 +133,7 @@ end
 #credit:http://goo.gl/weRQPO
 #
 #call like this url:
-#               "http://localhost:4567/createUser/name=Bir&sname=Gorkhali"
+#               "http://localhost:4567/createUser?name=Bir&sname=Gorkhali"
 # and the email id of Bir Gorkahali will be "bir.gorkhali@domainname.com"
 #
 get '/createUser' do
@@ -204,34 +212,6 @@ get '/listUsers' do
 
 end
 
-##---------------------------------------------------------------------------
-##---------------------------------------------------------------------------
-##---------------------------------------------------------------------------
-## http://localhost:4567/createGroup?group_email?=&group_name=&group_email_alias=&description=
-get '/createGroup' do
-
-  group_email= params[:group_email]
-  group_name= params[:group_name]
-  description= params[:description]
-  aliases=params[:group_email_alias]
-
-  new_group = admin_api.groups.insert.request_schema.new({
-                                                           "email"=> group_email,
-                                                           "name"=> group_name,
-                                                           "description"=> description
-                                                         })
-  result = api_client.execute(
-                              :api_method => admin_api.groups.insert,
-                              :body_object => new_group
-                              )
-  puts result.data.to_hash
-  puts "Creation of New Group Email: #{params[:group_email]} \n with alias: #{params[:group_email_alias]} succcesful."
-
-end
-
-
-##---------------------------------------------------------------------------
-##---------------------------------------------------------------------------
 
 
 
