@@ -5,8 +5,7 @@
 #               "http://localhost:4567/createUser?name=Bir&sname=Gorkhali"
 # and the email id of Bir Gorkahali will be "bir.gorkhali@domainname.com"
 #
-get '/createUser' do
-
+post '/createUser' do
   #paramaters needed: { Name and FamilyName }
   name = params[:name]
   sname = params[:sname]
@@ -18,8 +17,8 @@ get '/createUser' do
                                                          'primaryEmail' => email,
                                                          "changePasswordAtNextLogin"=> true,
                                                          'name' => {
-                                                           'familyName' => sname,
-                                                           'givenName' => name
+                                                           'familyName' => sname.capitalize,
+                                                           'givenName' => name.capitalize
                                                          }
                                                        })
   result = api_client.execute(
@@ -27,10 +26,10 @@ get '/createUser' do
                               :body_object => new_user
                               )
   puts "Hurray, New User #{email} created. :)"
+
   result.data.to_hash
 
 end
-
 
 get '/getUser' do
 
@@ -40,7 +39,7 @@ get '/getUser' do
                               :parameters => {"userKey" => "#{params[:email]}"}
 
                               )
-    result.data.to_hash
+    result.data.to_json
 end
 
 # get '/updateUser' do
@@ -55,7 +54,7 @@ end
 
 # end
 
-get '/deleteUser' do
+delete '/deleteUser' do
 
   puts "Deleting the User : #{params[:email]}"
   result = api_client.execute(
@@ -63,7 +62,7 @@ get '/deleteUser' do
                               :parameters => {"userKey" => "#{params[:email]}"}
 
                               )
-  result.data
+  result.data.to_json
 
 end
 
@@ -75,21 +74,6 @@ get '/listUsers' do
                               :parameters => {"domain" => "#{params[:domain]}"}
 
                               )
-  result.data.to_hash
+  result.data.to_json
 
 end
-
-
-
-
-
-
-
-# get '/calander' do
-
-#   # Fetch list of events on the user's default calandar
-#   result = api_client.execute(:api_method => calendar_api.events.list,
-#                               :parameters => {'calendarId' => 'primary'},
-#                               :authorization => user_credentials)
-#   [result.status, {'Content-Type' => 'application/json'}, result.data.to_json]
-# end

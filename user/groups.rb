@@ -7,7 +7,7 @@
 #                     &gname=...
 #                     &gemail_alias=...
 #                     &description=...
-get '/createGroup' do
+post '/createGroup' do
 
   group_email= params[:gemail]
   group_name= params[:gname]
@@ -23,43 +23,43 @@ get '/createGroup' do
                               :api_method => admin_api.groups.insert,
                               :body_object => new_group
                               )
-  puts "Creation of New Group Email: #{params[:group_email]} \n with alias: #{params[:group_email_alias]} succcesful."
-  result.data.to_hash
+  puts "Creation of New Group Email: #{params[:gemail]} \n with alias: #{params[:gemail_alias]} succcesful."
+  result.data.to_json
 end
 ###
 ##------------------------------------------------------------------------
-# Add new member to the group
+# Delete the whole Group
 ##------------------------------------------------------------------------
 # ⚔Url:
-#     /deleteGroup?gemail=testgroup@test.com
+#     /deleteGroup?gemail=test.group@test.com
 ###
 delete '/deleteGroup' do
 
-  puts "Okies the googleGroup: #{params[:gemail]} is no more."
+
   result = api_client.execute(:api_method => admin_api.groups.delete,
                               :parameters=>{'groupKey'=> params[:gemail]}
                               )
-  puts result.data
+  puts result.data.to_hash
   puts "your group #{params[:gemail]} is no more"
 end
 ###
 ##------------------------------------------------------------------------
-# List All the users in the group
+# List All the groups in th organistaon
 ##------------------------------------------------------------------------
 # ⚔Url:
-#     /listGroupMembers?
-#                      groupKey::gemail="emailOfyourgroup"
-#                      role= role : { OWNER, MANAGER, MEMBER }   → Let's put MEMBER default
-#                      maxResult
+#     /listGroups?
+#                      doamin= ...   → Let's put sukulgunda.mygbiz.com
+#                      ... other options left to be added
 ###
-get '/listGroupMembers' do
+get '/listGroups' do
 
-  puts "Okies the googleGroup: #{params[:gemail]} is no more."
-  result = api_client.execute(:api_method => admin_api.groups.delete,
-                              :parameters=>{'groupKey'=> params[:gemail]}
-                              )
-  puts result.data
-  puts "your group #{params[:gemail]} is no more"
+  params[:doamin]= 'sukulgunda.mygbiz.com'
+  puts "listing all the available groups: #{params[:domain]}"
+  result = api_client.execute(:api_method => admin_api.groups.list,
+                              :parameters=>{'domain'=> params[:domain]})
+  puts "your group are #{result.data.to_hash}"
+  result.data.to_json
+
 end
 ###
 #----------------------------------------------------------------------------
