@@ -7,6 +7,7 @@ require 'logger'
 
 require_relative 'groups'
 require_relative 'user'
+require_relative 'members'
 enable :sessions
 
 CREDENTIAL_STORE_FILE = "#{$0}-oauth2.json"
